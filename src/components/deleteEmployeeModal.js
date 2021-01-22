@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import EmployeeService from "../services/EmployeeService";
 import {
     Modal,
     View,
@@ -27,11 +28,7 @@ class DeleteEmployeeModal extends Component {
         // destructure state
         this.setState({ errorMessage: "", loading: true });
 
-        // selected employee is updated with employee id
-        fetch(`https://5fa103ace21bab0016dfd97e.mockapi.io/api/v1/employee/${this.props.selectedEmployee.id}`, {
-            method: "DELETE"
-        })
-            .then(res => res.json())
+        EmployeeService.remove(this.props.selectedEmployee.id)
             .then(res => {
                 this.props.closeModal();
                 this.props.updateEmployee(this.props.selectedEmployee.id);

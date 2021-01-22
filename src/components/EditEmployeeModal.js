@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import EmployeeService from "../services/EmployeeService";
 import {
     Modal,
     View,
@@ -8,7 +9,7 @@ import {
     TouchableOpacity
 } from 'react-native';
 
-class AddEmployeeModal extends Component {
+class EditEmployeeModal extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -20,36 +21,41 @@ class AddEmployeeModal extends Component {
         };
     }
 
+    componentDidMount() {
+        // state value is updated by selected employee data
+        const { name, age, salary } = this.props.selectedEmployee;
+        this.setState({
+            name: name,
+            age: age,
+            salary: salary
+        })
+    }
+
     handleChange = (value, state) => {
         this.setState({ [state]: value })
     }
 
-    addEmployee = () => {
+    updateEmployee = () => {
         // destructure state
         const { name, age, salary } = this.state;
         this.setState({ errorMessage: "", loading: true });
 
         if (name && age && salary) {
-            fetch('https://5fa103ace21bab0016dfd97e.mockapi.io/api/v1/employee', {
-                method: "POST",
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    name: this.state.name,
-                    salary: this.state.salary,
-                    age: this.state.age
-                })
-            })
-                .then(res => res.json())
+            // selected employee is updated with employee id
+            const id = this.props.selectedEmployee.id;
+            const data = {
+                name: this.state.name,
+                salary: this.state.salary,
+                age: this.state.age
+            }
+            EmployeeService.update(id, data)
                 .then(res => {
                     this.props.closeModal();
-                    this.props.addEmployee({
-                        employee_name: res.name,
-                        employee_age: res.age,
-                        employee_salary: res.salary,
-                        id: res.id
+                    this.props.updateEmployee({
+                        name: res.data.name,
+                        age: res.data.age,
+                        salary: res.data.salary,
+                        id: this.props.selectedEmployee.id
                     });
                 })
                 .catch(() => {
@@ -62,7 +68,7 @@ class AddEmployeeModal extends Component {
 
     render() {
         const { isOpen, closeModal } = this.props;
-        const { loading, errorMessage } = this.state;
+        const { name, age, salary, loading, errorMessage } = this.state;
         return (
             <Modal
                 visible={isOpen}
@@ -70,19 +76,22 @@ class AddEmployeeModal extends Component {
                 animationType="slide"
             >
                 <View style={styles.container}>
-                    <Text style={styles.title}>Add New Employee</Text>
+                    <Text style={styles.title}>Update Employee</Text>
 
                     <TextInput
+                        value={name}
                         style={styles.textBox}
                         onChangeText={(text) => this.handleChange(text, "name")}
                         placeholder="Full Name" />
 
                     <TextInput
+                        defaultValue={salary}
                         keyboardType="numeric"
                         style={styles.textBox}
                         onChangeText={(text) => this.handleChange(text, "salary")}
                         placeholder="salary" />
                     <TextInput
+                        defaultValue={age}
                         keyboardType="numeric"
                         style={styles.textBox}
                         onChangeText={(text) => this.handleChange(text, "age")}
@@ -94,9 +103,9 @@ class AddEmployeeModal extends Component {
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
-                            onPress={this.addEmployee}
+                            onPress={this.updateEmployee}
                             style={{ ...styles.button, marginVertical: 0 }}>
-                            <Text style={styles.buttonText}>Submit</Text>
+                            <Text style={styles.buttonText}>Update</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -114,7 +123,7 @@ class AddEmployeeModal extends Component {
 
 
 
-export default AddEmployeeModal;
+export default EditEmployeeModal;
 
 const styles = StyleSheet.create({
     container: {

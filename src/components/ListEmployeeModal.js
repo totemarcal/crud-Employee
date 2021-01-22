@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from "react-nati
 import AddEmployeeModal from "./AddEmployeeModal";
 import EditEmployeeModal from "./EditEmployeeModal";
 import DeleteEmployeeModal from "./deleteEmployeeModal";
+import EmployeeService from "../services/EmployeeService";
 
 class App extends Component {
   state = {
@@ -21,14 +22,11 @@ class App extends Component {
 
   getData = () => {
     this.setState({ errorMessage: "", loading: true })
-    fetch('https://5fa103ace21bab0016dfd97e.mockapi.io/api/v1/employee', {
-      method: "GET"
-    })
-      .then(res => res.json())
+    EmployeeService.getAll()
       .then(res => {
-        console.log(res)
+        console.log(res.data)
         this.setState({
-        employee: res,
+        employee: res.data,
         loading: false, errorMessage: ""
       })})
       .catch(() => this.setState({
@@ -78,13 +76,14 @@ class App extends Component {
           </TouchableOpacity>
 
           <Text style={styles.title}>Employee Lists:</Text>
-          {employee.map((data, index) => <View
+          {employee.map((data, index) => 
+            <View
             style={styles.employeeListContainer}
             key={data.id}>
             <Text style={{ ...styles.listItem, color: "tomato" }}>{index + 1}.</Text>
-            <Text style={styles.name}>{data.employee_name}</Text>
-            <Text style={styles.listItem}>employee age: {data.employee_age}</Text>
-            <Text style={styles.listItem}>employee salary: {data.employee_salary}</Text>
+            <Text style={styles.name}>{data.name}</Text>
+            <Text style={styles.listItem}>employee age: {data.age}</Text>
+            <Text style={styles.listItem}>employee salary: {data.salary}</Text>
 
             <View style={styles.buttonContainer}>
               <TouchableOpacity
