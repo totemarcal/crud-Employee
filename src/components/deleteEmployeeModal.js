@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import EmployeeService from "../services/EmployeeService";
 import {
     Modal,
@@ -8,39 +8,32 @@ import {
     TouchableOpacity
 } from 'react-native';
 
-class DeleteEmployeeModal extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: "",
-            salary: "",
-            age: "",
-            loading: false,
-            errorMessage: ''
-        };
-    }
+const DeleteEmployeeModal = (props) => {
+    const initialEmployeeState = {
+        name: "",
+        age: "",
+        salary: ""
+      };
 
-    handleChange = (value, state) => {
-        this.setState({ [state]: value })
-    }
+    const [loading, setLoading] = useState(false)
+    const [errorMessage, setErrorMessage] = useState("")
+    const { isOpen, closeModal, selectedEmployee } = props;
 
-    deleteEmployee = () => {
-        // destructure state
-        this.setState({ errorMessage: "", loading: true });
 
-        EmployeeService.remove(this.props.selectedEmployee.id)
+    const deleteEmployee = () => {
+        setErrorMessage("")
+        setLoading(true);
+
+        EmployeeService.remove(props.selectedEmployee.id)
             .then(res => {
-                this.props.closeModal();
-                this.props.updateEmployee(this.props.selectedEmployee.id);
+                props.closeModal();
+                props.updateEmployee(props.selectedEmployee.id);
             })
             .catch((err) => {
-                this.setState({ errorMessage: "Network Error. Please try again.", loading: false })
-            })
+                setErrorMessage("Network Error. Please try again.")
+                setLoading(false)            })
     }
 
-    render() {
-        const { isOpen, closeModal, selectedEmployee } = this.props;
-        const { loading, errorMessage } = this.state;
         return (
             <Modal
                 visible={isOpen}
@@ -50,7 +43,7 @@ class DeleteEmployeeModal extends Component {
             >
                 <View style={styles.BackgroundContainer}>
                     <View style={styles.container}>
-                        <Text style={styles.title}>would you like to delete employee name ({selectedEmployee.employee_name})?</Text>
+                        <Text style={styles.title}>would you like to delete employee name ({selectedEmployee.name})?</Text>
                         <Text style={styles.subTitle}>If you are sure to delete this  employee then click Agree
                         button or if you are not willing to delete just click Disagree.</Text>
 
@@ -60,7 +53,7 @@ class DeleteEmployeeModal extends Component {
 
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity
-                                onPress={this.deleteEmployee}>
+                                onPress={deleteEmployee}>
                                 <Text style={styles.buttonText}>Agree</Text>
                             </TouchableOpacity>
 
@@ -74,7 +67,7 @@ class DeleteEmployeeModal extends Component {
                 </View>
             </Modal>
         );
-    }
+    
 }
 
 

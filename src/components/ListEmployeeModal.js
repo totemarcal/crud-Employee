@@ -1,76 +1,71 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import AddEmployeeModal from "./AddEmployeeModal";
 import EditEmployeeModal from "./EditEmployeeModal";
 import DeleteEmployeeModal from "./deleteEmployeeModal";
 import EmployeeService from "../services/EmployeeService";
 
-class App extends Component {
-  state = {
-    employee: [],
-    isAddEmployeeModalOpen: false,
-    isEditEmployeeModalOpen: false,
-    isDeleteEmployeeModalOpen: false,
-    loading: false,
-    errorMessage: "",
-    selectedEmployee: {}
-  }
+const App = (props) => {
 
-  componentDidMount() {
-    this.getData();
-  }
+  const [employee, setEmployee] = useState([]);
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false)
+  const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false)
+  const [isDeleteEmployeeModalOpen, setIsDeleteEmployeeModalOpen] = useState(false)
+  const [selectedEmployee, setSelectedEmployee] = useState(false)
 
-  getData = () => {
-    this.setState({ errorMessage: "", loading: true })
+  useEffect(() => {
+    getData();
+  },[])
+
+  
+  const getData = () => {
+    setErrorMessage("")
+    setLoading(true);
     EmployeeService.getAll()
       .then(res => {
         console.log(res.data)
-        this.setState({
-        employee: res.data,
-        loading: false, errorMessage: ""
-      })})
-      .catch(() => this.setState({
-        loading: false,
-        errorMessage: "Network Error. Please try again."
-      }))
+        setEmployee(res.data)
+        setErrorMessage("")
+        setLoading(false);
+        })
+      .catch(() => 
+      {setErrorMessage("Network Error. Please try again.")
+      setLoading(false)}
+      )
   }
 
-  toggleAddEmployeeModal = () => {
-    this.setState({ isAddEmployeeModalOpen: !this.state.isAddEmployeeModalOpen });
+  const toggleAddEmployeeModal = () => {
+    setIsAddEmployeeModalOpen(!isAddEmployeeModalOpen)
   }
 
-  toggleEditEmployeeModal = () => {
-    this.setState({ isEditEmployeeModalOpen: !this.state.isEditEmployeeModalOpen });
+  const toggleEditEmployeeModal = () => {
+    setIsEditEmployeeModalOpen(!isEditEmployeeModalOpen)
   }
 
-  toggleDeleteEmployeeModal = () => {
-    this.setState({ isDeleteEmployeeModalOpen: !this.state.isDeleteEmployeeModalOpen });
+  const toggleDeleteEmployeeModal = () => {
+    setIsDeleteEmployeeModalOpen(!isDeleteEmployeeModalOpen)
   }
 
-  addEmployee = (data) => {
-    // this.state.employee array is seprated into object by rest operator
-    this.setState({ employee: [data, ...this.state.employee] })
+  const addEmployee = (data) => {
+    setEmployee([data, ...employee])
   }
 
-  updateEmployee = (data) => {
-    // updating employee data with updated data if employee id is matched with updated data id
-    this.setState({ employee: this.state.employee.map(emp => emp.id == data.id ? data : emp) });
+  const updateEmployee = (data) => {
+    setEmployee(employee.map(emp => emp.id == data.id ? data : emp) )
   }
 
-  deleteEmployee = employeeId => {
-    // delete employee lsit with deleted data if employee id is matched with updated data id
-    this.setState({ employee: this.state.employee.filter(emp => emp.id !== employeeId) })
+  const deleteEmployee = employeeId => {
+    setEmployee(employee.filter(emp => emp.id !== employeeId))
   }
 
-  render() {
-    const { loading, errorMessage, employee, isAddEmployeeModalOpen,
-      isEditEmployeeModalOpen, isDeleteEmployeeModalOpen, selectedEmployee } = this.state;
     return (
       <ScrollView>
 
         <View style={styles.container}>
           <TouchableOpacity
-            onPress={this.toggleAddEmployeeModal}
+            onPress={toggleAddEmployeeModal}
             style={styles.button}>
             <Text style={styles.buttonText}>Add employee</Text>
           </TouchableOpacity>
@@ -88,8 +83,8 @@ class App extends Component {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 onPress={() => {
-                  this.toggleEditEmployeeModal();
-                  this.setState({ selectedEmployee: data })
+                  toggleEditEmployeeModal();
+                  setSelectedEmployee(data)
                 }}
                 style={{ ...styles.button, marginVertical: 0 }}>
                 <Text style={styles.buttonText}>Edit</Text>
@@ -97,8 +92,8 @@ class App extends Component {
 
               <TouchableOpacity
                 onPress={() => {
-                  this.toggleDeleteEmployeeModal();
-                  this.setState({ selectedEmployee: data })
+                  toggleDeleteEmployeeModal();
+                  setSelectedEmployee(data)
                 }}
                 style={{ ...styles.button, marginVertical: 0, marginLeft: 10, backgroundColor: "tomato" }}>
                 <Text style={styles.buttonText}>Delete</Text>
@@ -113,30 +108,30 @@ class App extends Component {
           {/* AddEmployeeModal modal is open when add employee button is clicked */}
           {isAddEmployeeModalOpen ? <AddEmployeeModal
             isOpen={isAddEmployeeModalOpen}
-            closeModal={this.toggleAddEmployeeModal}
-            addEmployee={this.addEmployee}
+            closeModal={toggleAddEmployeeModal}
+            addEmployee={addEmployee}
           /> : null}
 
           {/* EditEmployeeModal modal is open when edit button is clicked in particular employee list*/}
           {isEditEmployeeModalOpen ? <EditEmployeeModal
             isOpen={isEditEmployeeModalOpen}
-            closeModal={this.toggleEditEmployeeModal}
+            closeModal={toggleEditEmployeeModal}
             selectedEmployee={selectedEmployee}
-            updateEmployee={this.updateEmployee}
+            updateEmployee={updateEmployee}
           /> : null}
 
           {/* DeleteEmployeeModal modal is open when delete button is clicked in particular employee list*/}
           {isDeleteEmployeeModalOpen ? <DeleteEmployeeModal
             isOpen={isDeleteEmployeeModalOpen}
-            closeModal={this.toggleDeleteEmployeeModal}
+            closeModal={toggleDeleteEmployeeModal}
             selectedEmployee={selectedEmployee}
-            updateEmployee={this.deleteEmployee}
+            updateEmployee={deleteEmployee}
           /> : null}
         </View>
 
       </ScrollView>
     );
-  }
+  
 }
 
 export default App;

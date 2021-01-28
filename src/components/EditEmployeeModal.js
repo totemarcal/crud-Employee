@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import EmployeeService from "../services/EmployeeService";
 import {
     Modal,
@@ -9,116 +9,116 @@ import {
     TouchableOpacity
 } from 'react-native';
 
-class EditEmployeeModal extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: "",
-            salary: "",
-            age: "",
-            loading: false,
-            errorMessage: ''
-        };
-    }
+const EditEmployeeModal = (props) => {
+    const initialEmployeeState = {
+        name: "",
+        age: "",
+        salary: ""
+      };
 
-    componentDidMount() {
+    const [employee, setEmployee] = useState(initialEmployeeState);
+    const [loading, setLoading] = useState(false)
+    const [errorMessage, setErrorMessage] = useState("")
+    const { isOpen, closeModal } = props;
+
+    useEffect(() => {
         // state value is updated by selected employee data
-        const { name, age, salary } = this.props.selectedEmployee;
-        this.setState({
-            name: name,
-            age: age,
-            salary: salary
-        })
+        const data = {
+            name: props.selectedEmployee.name,
+            age: props.selectedEmployee.age,
+            salary: props.selectedEmployee.salary
+          };
+        setEmployee(data)
+    }, [])
+
+    const handleChange = (value, name) => {
+        setEmployee({ ...employee, [name]: value });
     }
 
-    handleChange = (value, state) => {
-        this.setState({ [state]: value })
-    }
-
-    updateEmployee = () => {
+    const updateEmployee = () => {
         // destructure state
-        const { name, age, salary } = this.state;
-        this.setState({ errorMessage: "", loading: true });
+        
+        setErrorMessage("")
+        setLoading(true);
 
-        if (name && age && salary) {
+        if (employee.name && employee.age && employee.salary) {
             // selected employee is updated with employee id
-            const id = this.props.selectedEmployee.id;
+            const id = props.selectedEmployee.id;
             const data = {
-                name: this.state.name,
-                salary: this.state.salary,
-                age: this.state.age
+                name: employee.name,
+                salary: employee.salary,
+                age: employee.age
             }
             EmployeeService.update(id, data)
                 .then(res => {
-                    this.props.closeModal();
-                    this.props.updateEmployee({
+                    props.closeModal();
+                    props.updateEmployee({
                         name: res.data.name,
                         age: res.data.age,
                         salary: res.data.salary,
-                        id: this.props.selectedEmployee.id
+                        id: props.selectedEmployee.id
                     });
                 })
                 .catch(() => {
-                    this.setState({ errorMessage: "Network Error. Please try again.", loading: false })
+                    setErrorMessage("Network Error. Please try again.")
+                    setLoading(false)
                 })
         } else {
-            this.setState({ errorMessage: "Fields are empty.", loading: false })
+            setErrorMessage("Fields are empty.")
+            setLoading(false)
         }
     }
 
-    render() {
-        const { isOpen, closeModal } = this.props;
-        const { name, age, salary, loading, errorMessage } = this.state;
-        return (
-            <Modal
-                visible={isOpen}
-                onRequestClose={closeModal}
-                animationType="slide"
-            >
-                <View style={styles.container}>
-                    <Text style={styles.title}>Update Employee</Text>
+    return (
+        <Modal
+            visible={isOpen}
+            onRequestClose={closeModal}
+            animationType="slide"
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>Update Employee</Text>
 
-                    <TextInput
-                        value={name}
-                        style={styles.textBox}
-                        onChangeText={(text) => this.handleChange(text, "name")}
-                        placeholder="Full Name" />
+                <TextInput
+                    value={employee.name}
+                    style={styles.textBox}
+                    onChangeText={(text) => handleChange(text, "name")}
+                    placeholder="Full Name" />
 
-                    <TextInput
-                        defaultValue={salary}
-                        keyboardType="numeric"
-                        style={styles.textBox}
-                        onChangeText={(text) => this.handleChange(text, "salary")}
-                        placeholder="salary" />
-                    <TextInput
-                        defaultValue={age}
-                        keyboardType="numeric"
-                        style={styles.textBox}
-                        onChangeText={(text) => this.handleChange(text, "age")}
-                        placeholder="Age" />
+                <TextInput
+                    defaultValue={employee.salary}
+                    keyboardType="numeric"
+                    style={styles.textBox}
+                    onChangeText={(text) => handleChange(text, "salary")}
+                    placeholder="salary" />
+                <TextInput
+                    defaultValue={employee.age}
+                    keyboardType="numeric"
+                    style={styles.textBox}
+                    onChangeText={(text) => handleChange(text, "age")}
+                    placeholder="Age" />
 
-                    {loading ? <Text
-                        style={styles.message}>Please Wait...</Text> : errorMessage ? <Text
-                            style={styles.message}>{errorMessage}</Text> : null}
+                {loading ? <Text
+                    style={styles.message}>Please Wait...</Text> : errorMessage ? <Text
+                        style={styles.message}>{errorMessage}</Text> : null}
 
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            onPress={this.updateEmployee}
-                            style={{ ...styles.button, marginVertical: 0 }}>
-                            <Text style={styles.buttonText}>Update</Text>
-                        </TouchableOpacity>
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        onPress={updateEmployee}
+                        style={{ ...styles.button, marginVertical: 0 }}>
+                        <Text style={styles.buttonText}>Update</Text>
+                    </TouchableOpacity>
 
-                        <TouchableOpacity
-                            onPress={closeModal}
-                            style={{ ...styles.button, marginVertical: 0, marginLeft: 10, backgroundColor: "tomato" }}>
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-
+                    <TouchableOpacity
+                        onPress={closeModal}
+                        style={{ ...styles.button, marginVertical: 0, marginLeft: 10, backgroundColor: "tomato" }}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
                 </View>
-            </Modal>
-        );
-    }
+
+            </View>
+        </Modal>
+    );
+    
 }
 
 
